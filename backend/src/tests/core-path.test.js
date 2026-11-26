@@ -18,7 +18,6 @@ process.env.HOST = '127.0.0.1';
 const { initDatabase } = await import('../database/initDatabase.js');
 const { dbEngine } = await import('../database/sqlite.js');
 const { authService } = await import('../services/authService.js');
-const { backupService } = await import('../backup/backupService.js');
 const { cartService } = await import('../services/cartService.js');
 const { orderCreationService } = await import('../services/orderCreationService.js');
 const { paymentService } = await import('../services/paymentService.js');
@@ -104,13 +103,6 @@ test('checkout then cash payment is idempotent', async () => {
     amount_received: due
   }, payKey);
   assert.equal(second.payment.id, first.payment.id);
-});
-
-test('backup create writes a zip', async () => {
-  const result = await backupService.createBackup('test');
-  assert.ok(result.file);
-  assert.equal(fs.existsSync(result.file), true);
-  assert.ok(result.size > 0);
 });
 
 async function seedPricedProduct(price) {

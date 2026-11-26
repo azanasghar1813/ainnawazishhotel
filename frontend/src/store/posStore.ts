@@ -65,7 +65,7 @@ export type CartItem = OrderItem & {
 
 interface POSState {
   // Global App State
-  menuContext: 'Fast Food' | 'Restaurant' | 'Deals'
+  menuContext: string
   gridDensity: 'small' | 'medium' | 'large'
   
   // New backend-driven state
@@ -124,7 +124,7 @@ interface POSState {
   getRoundOff: () => number
 
   // Setters
-  setMenuContext: (context: 'Fast Food' | 'Restaurant' | 'Deals') => void
+  setMenuContext: (context: string) => void
   setGridDensity: (density: 'small' | 'medium' | 'large') => void
   setOrderType: (type: 'Dine In' | 'Takeaway' | 'Delivery' | 'Drive Through') => Promise<void>
   setCustomer: (customer: any | null) => void

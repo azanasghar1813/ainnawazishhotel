@@ -7,8 +7,8 @@ import { configService } from './services/configService.js';
 import { menuCacheService } from './services/menuCacheService.js';
 import { printEngineService } from './services/printEngineService.js';
 import { printerDriverService } from './services/printerDriverService.js';
-import { backupService } from './backup/backupService.js';
 import { socketService } from './services/socketService.js';
+import { activityLogService } from './services/activityLogService.js';
 process.on('uncaughtException', (err) => {
   console.error('[UNCAUGHT EXCEPTION]', err.name, err.message);
   if (err.stack) console.error(err.stack);
@@ -110,7 +110,8 @@ const startServer = async () => {
     menuCacheService.initialize();
     printEngineService.start();
     printerDriverService.ensureRawWorker().catch(e => console.warn('[PrinterDriver] Prewarming worker failed:', e.message));
-    backupService.startScheduler();
+    activityLogService.purgeOldLogs(90);
+    setInterval(() => activityLogService.purgeOldLogs(90), 24 * 60 * 60 * 1000).unref();
 
     // Start periodic WAL maintenance now that the DB connection is live.
     // Cheap no-op checks every 15 min; only does real work if WAL > 64MB.

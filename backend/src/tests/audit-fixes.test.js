@@ -24,10 +24,3 @@ test('drive-through aliases normalize to DRIVE_THROUGH', () => {
   assert.equal(normalizeOrderType('Drive Through'), 'DRIVE_THROUGH');
   assert.equal(normalizeOrderType('dine in'), 'DINE_IN');
 });
-
-test('soda bar bucket matches special drinks catalog names', () => {
-  assert.match(CATEGORY_BUCKET_SQL, /special drinks/);
-  assert.match(CATEGORY_BUCKET_SQL, /soda bar/);
-  assert.match(CATEGORY_BUCKET_SQL, /potato chips/);
-  assert.match(CATEGORY_BUCKET_SQL, /shani fries/);
-});

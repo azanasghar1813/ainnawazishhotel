@@ -34,5 +34,5 @@ export const envSchema = z.object({
     },
     z.string().url().optional()
   ),
-  DEVICE_SECRET: z.string().min(16),
+  DEVICE_SECRET: z.string().optional(),
 });

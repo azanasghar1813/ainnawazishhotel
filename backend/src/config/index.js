@@ -53,7 +53,7 @@ const config = {
   sync: {
     apiUrl: env.SYNC_API_URL,
     fallbackApiUrl: env.SYNC_API_FALLBACK_URL || '',
-    deviceSecret: env.DEVICE_SECRET
+    deviceSecret: env.DEVICE_SECRET || ''
   }
 };
 

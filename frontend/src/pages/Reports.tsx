@@ -19,9 +19,7 @@ export const mapCategory = (cat: string | null | undefined) => {
   if (lower === 'fast food' || lower.includes('fast food')) return "Fast Food"
   if (lower === 'restaurant' || lower.includes('restaurant')) return "Restaurant"
   if (lower === 'deals' || lower.includes('deal') || lower.includes('combo')) return "Deals"
-  if (lower === 'soda bar' || lower.includes('soda bar') || lower === 'special drinks' || lower.includes('special drink')) return "Soda Bar"
   if (lower === 'drinks' || lower === 'cold drinks' || lower.includes('cold drink')) return "Drinks"
-  if (lower === 'fries' || lower === 'potato chips' || lower === 'shani fries') return "Fries Corner"
   return "Other"
 }
 
@@ -311,9 +309,7 @@ export default function Reports() {
               ['Restaurant Sales', `Rs. ${formatCurrency(reportStats.restaurantSales || 0)}`],
               ['Fast Food Sales', `Rs. ${formatCurrency(reportStats.fastFoodSales || 0)}`],
               ['Deals Sales', `Rs. ${formatCurrency(reportStats.dealsSales || 0)}`],
-              ['Drink Corner', `Rs. ${formatCurrency(reportStats.specialDrinksSales || 0)}`],
-              ['Drinks Sales', `Rs. ${formatCurrency(reportStats.drinksSales || 0)}`],
-              ['Fries Corner', `Rs. ${formatCurrency(reportStats.chipsSales || 0)}`]
+              ['Drinks Sales', `Rs. ${formatCurrency(reportStats.drinksSales || 0)}`]
             ],
             theme: 'grid',
           })
@@ -391,8 +387,6 @@ export default function Reports() {
           <tr><td>Card/Digital Sales</td><td>Rs. ${formatCurrency(reportStats.cardSales || 0)}</td></tr>
           <tr><td>Restaurant Sales</td><td>Rs. ${formatCurrency(reportStats.restaurantSales || 0)}</td></tr>
           <tr><td>Fast Food Sales</td><td>Rs. ${formatCurrency(reportStats.fastFoodSales || 0)}</td></tr>
-          <tr><td>Drink Corner</td><td>Rs. ${formatCurrency(reportStats.specialDrinksSales || 0)}</td></tr>
-          <tr><td>Fries Corner</td><td>Rs. ${formatCurrency(reportStats.chipsSales || 0)}</td></tr>
         </table>
         <h2>Order Details</h2>
         <table>
@@ -430,8 +424,9 @@ export default function Reports() {
         totalOrdersCount: 0, grossSales: 0, netSales: 0, totalTax: 0, totalService: 0,
         totalDiscount: 0, totalDelivery: 0, paidCount: 0, unpaidCount: 0, refundsCount: 0, refundsAmount: 0, cashSales: 0,
         cardSales: 0, digitalSales: 0, unpaidSales: 0, avgBill: 0, netEstimatedProfit: 0,
-        restaurantSales: 0, fastFoodSales: 0, dealsSales: 0, drinksSales: 0, chipsSales: 0,
-        specialDrinksSales: 0, otherSales: 0, totalCatSales: 0, openBillsCount: 0, openBillsTotal: 0
+        restaurantSales: 0, fastFoodSales: 0, dealsSales: 0, drinksSales: 0,
+        otherSales: 0, totalCatSales: 0, openBillsCount: 0, openBillsTotal: 0,
+        dineInSales: 0, dineInCount: 0, deliverySales: 0, deliveryCount: 0, takeawaySales: 0, takeawayCount: 0
       }
     }
 
@@ -450,7 +445,7 @@ export default function Reports() {
     const digitalSales = reportSummary.digitalSales ?? 0
     const unpaidSales = reportSummary.unpaidSales ?? Math.max(0, grossSales - cashSales - digitalSales)
     const totalCatSales = reportSummary.totalCatSales
-      ?? (restaurantSales + fastFoodSales + dealsSales + drinksSales + chipsSales + specialDrinksSales + otherSales)
+      ?? (restaurantSales + fastFoodSales + dealsSales + drinksSales + otherSales)
 
     return {
       totalOrdersCount: reportSummary.ordersCount || 0,
@@ -479,7 +474,13 @@ export default function Reports() {
       otherSales,
       totalCatSales,
       openBillsCount: reportSummary.openBillsCount || 0,
-      openBillsTotal: reportSummary.openBillsTotal || 0
+      openBillsTotal: reportSummary.openBillsTotal || 0,
+      dineInSales: reportSummary.dineInSales || 0,
+      dineInCount: reportSummary.dineInCount || 0,
+      deliverySales: reportSummary.deliverySales || 0,
+      deliveryCount: reportSummary.deliveryCount || 0,
+      takeawaySales: reportSummary.takeawaySales || 0,
+      takeawayCount: reportSummary.takeawayCount || 0
     }
   }, [reportSummary])
 
@@ -1058,24 +1059,6 @@ export default function Reports() {
                           {(reportStats.totalCatSales || 0) > 0 ? Math.round(((reportStats.drinksSales || 0) / (reportStats.totalCatSales || 1)) * 100) : 0}%
                         </span>
                       </div>
-                      <div className="p-3 bg-cyan-500/10 border border-cyan-500/25 rounded-2xl flex justify-between items-center">
-                        <div>
-                          <span className="text-[10px] text-cyan-500 font-bold uppercase">Soda Bar</span>
-                          <p className="text-lg font-black text-foreground mt-0.5">Rs. {formatCurrency(reportStats.specialDrinksSales || 0)}</p>
-                        </div>
-                        <span className="text-sm font-bold text-cyan-500 bg-cyan-500/20 px-3 py-1.5 rounded-lg">
-                          {(reportStats.totalCatSales || 0) > 0 ? Math.round(((reportStats.specialDrinksSales || 0) / (reportStats.totalCatSales || 1)) * 100) : 0}%
-                        </span>
-                      </div>
-                      <div className="p-3 bg-yellow-500/10 border border-yellow-500/25 rounded-2xl flex justify-between items-center">
-                        <div>
-                          <span className="text-[10px] text-yellow-500 font-bold uppercase">Shani Fries</span>
-                          <p className="text-lg font-black text-foreground mt-0.5">Rs. {formatCurrency(reportStats.chipsSales || 0)}</p>
-                        </div>
-                        <span className="text-sm font-bold text-yellow-500 bg-yellow-500/20 px-3 py-1.5 rounded-lg">
-                          {(reportStats.totalCatSales || 0) > 0 ? Math.round(((reportStats.chipsSales || 0) / (reportStats.totalCatSales || 1)) * 100) : 0}%
-                        </span>
-                      </div>
                       {(reportStats.otherSales || 0) > 0 && (
                         <div className="p-3 bg-zinc-500/10 border border-zinc-500/25 rounded-2xl flex justify-between items-center">
                           <div>
@@ -1102,33 +1085,49 @@ export default function Reports() {
                     </div>
                   </div>
 
-                  {/* Top Selling Items Pie Chart */}
-                  <div className="p-6 bg-card border border-border rounded-[2.5rem] shadow-sm flex flex-col justify-center">
-                    <h3 className="text-lg font-black uppercase tracking-wider text-foreground mb-4">Top Selling Items</h3>
-                    <div className="h-[200px] w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={productSalesData.slice(0, 5)}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={40}
-                            outerRadius={80}
-                            paddingAngle={5}
-                            dataKey="sold"
-                            nameKey="name"
-                          >
-                            {productSalesData.slice(0, 5).map((_entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <Tooltip
-                            formatter={(value) => `${value} items sold`}
-                            contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '12px', fontWeight: 'bold' }}
-                          />
-                          <Legend layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ fontSize: '11px', fontWeight: 'bold', color: 'hsl(var(--foreground))' }} />
-                        </PieChart>
-                      </ResponsiveContainer>
+                  {/* Order Type Sales Split — Dine In, Delivery, Takeaway */}
+                  <div className="p-6 bg-card border border-border rounded-[2.5rem] shadow-sm flex flex-col justify-between">
+                    <div>
+                      <h3 className="text-lg font-black uppercase tracking-wider text-foreground mb-1">Sales by Order Type</h3>
+                      <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-5">Dine In • Delivery • Takeaway</p>
+
+                      <div className="space-y-3">
+                        {/* Dine In */}
+                        <div className="p-4 bg-orange-500/10 border border-orange-500/25 rounded-2xl flex justify-between items-center">
+                          <div>
+                            <span className="text-[10px] text-orange-500 font-bold uppercase tracking-wider">Dine In</span>
+                            <p className="text-xl font-black text-foreground mt-0.5">Rs. {formatCurrency(reportStats.dineInSales || 0)}</p>
+                            <p className="text-[11px] font-bold text-muted-foreground mt-0.5">{reportStats.dineInCount || 0} orders</p>
+                          </div>
+                          <span className="text-sm font-bold text-orange-500 bg-orange-500/20 px-3 py-1.5 rounded-lg">
+                            {(reportStats.grossSales || 0) > 0 ? Math.round(((reportStats.dineInSales || 0) / (reportStats.grossSales || 1)) * 100) : 0}%
+                          </span>
+                        </div>
+
+                        {/* Delivery */}
+                        <div className="p-4 bg-blue-500/10 border border-blue-500/25 rounded-2xl flex justify-between items-center">
+                          <div>
+                            <span className="text-[10px] text-blue-500 font-bold uppercase tracking-wider">Delivery</span>
+                            <p className="text-xl font-black text-foreground mt-0.5">Rs. {formatCurrency(reportStats.deliverySales || 0)}</p>
+                            <p className="text-[11px] font-bold text-muted-foreground mt-0.5">{reportStats.deliveryCount || 0} orders</p>
+                          </div>
+                          <span className="text-sm font-bold text-blue-500 bg-blue-500/20 px-3 py-1.5 rounded-lg">
+                            {(reportStats.grossSales || 0) > 0 ? Math.round(((reportStats.deliverySales || 0) / (reportStats.grossSales || 1)) * 100) : 0}%
+                          </span>
+                        </div>
+
+                        {/* Takeaway */}
+                        <div className="p-4 bg-emerald-500/10 border border-emerald-500/25 rounded-2xl flex justify-between items-center">
+                          <div>
+                            <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-wider">Takeaway</span>
+                            <p className="text-xl font-black text-foreground mt-0.5">Rs. {formatCurrency(reportStats.takeawaySales || 0)}</p>
+                            <p className="text-[11px] font-bold text-muted-foreground mt-0.5">{reportStats.takeawayCount || 0} orders</p>
+                          </div>
+                          <span className="text-sm font-bold text-emerald-500 bg-emerald-500/20 px-3 py-1.5 rounded-lg">
+                            {(reportStats.grossSales || 0) > 0 ? Math.round(((reportStats.takeawaySales || 0) / (reportStats.grossSales || 1)) * 100) : 0}%
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

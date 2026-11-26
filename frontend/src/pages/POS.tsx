@@ -89,6 +89,7 @@ export default function POS() {
 
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<any[]>([])
+  const [mainCategories, setMainCategories] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   // Layout & Panel State
@@ -614,13 +615,22 @@ export default function POS() {
         setProducts([...loadedProducts, ...loadedDeals])
 
 
-        const getContext = (cat: any): string | null => {
-          if (cat.name === 'Fast Food' || cat.name === 'Restaurant' || cat.name === 'Deals') return cat.name;
-          if (cat.parent_id) {
-            const parent = activeCats.find((p: any) => p.id === cat.parent_id);
-            if (parent) return getContext(parent);
-          }
-          return null;
+        const rootCats = activeCats
+          .filter((c: any) => !c.parent_id)
+          .sort((a: any, b: any) => (Number(a.display_order) || 0) - (Number(b.display_order) || 0) || String(a.name).localeCompare(String(b.name)));
+        setMainCategories(rootCats);
+
+        const currentCtx = usePosStore.getState().menuContext;
+        if (rootCats.length > 0 && !rootCats.some((c: any) => c.name === currentCtx)) {
+          usePosStore.getState().setMenuContext(rootCats[0].name);
+        }
+
+        const getContext = (cat: any, depth = 0): string | null => {
+          if (depth > 10) return null;
+          if (!cat.parent_id) return cat.name;
+          const parent = activeCats.find((p: any) => p.id === cat.parent_id);
+          if (parent) return getContext(parent, depth + 1);
+          return cat.name;
         }
 
         const catsWithContext = activeCats.map((c: any) => ({
@@ -969,12 +979,12 @@ export default function POS() {
         usePosStore.getState().setOrderType(types[nextIndex])
       }
 
-      // CTRL + SHIFT + TAB: Switch Menu Context (Fast Food / Restaurant / Deals)
+      // CTRL + SHIFT + TAB: Switch Menu Context dynamically
       if (e.ctrlKey && e.shiftKey && e.key === 'Tab') {
         e.preventDefault()
-        const contexts: ('Fast Food' | 'Restaurant' | 'Deals')[] = ['Fast Food', 'Restaurant', 'Deals']
+        const contexts = mainCategories.length > 0 ? mainCategories.map(c => c.name) : ['Fast Food', 'Restaurant', 'Deals']
         const currentContext = usePosStore.getState().menuContext
-        const nextIndex = (contexts.indexOf(currentContext as any) + 1) % contexts.length
+        const nextIndex = (contexts.indexOf(currentContext) + 1) % contexts.length
         usePosStore.getState().setMenuContext(contexts[nextIndex])
         setActiveCategory("All")
         setGridSelectedIndex(0)
@@ -1073,28 +1083,31 @@ export default function POS() {
 
       switch (e.key) {
         case "F1":
-          // Switch to Fast Food section
-          e.preventDefault()
-          usePosStore.getState().setMenuContext('Fast Food')
-          setActiveCategory("All")
-          setGridSelectedIndex(0)
-          setIsCartMode(false)
+          if (mainCategories[0]) {
+            e.preventDefault()
+            usePosStore.getState().setMenuContext(mainCategories[0].name)
+            setActiveCategory("All")
+            setGridSelectedIndex(0)
+            setIsCartMode(false)
+          }
           break
         case "F2":
-          // Switch to Restaurant section
-          e.preventDefault()
-          usePosStore.getState().setMenuContext('Restaurant')
-          setActiveCategory("All")
-          setGridSelectedIndex(0)
-          setIsCartMode(false)
+          if (mainCategories[1]) {
+            e.preventDefault()
+            usePosStore.getState().setMenuContext(mainCategories[1].name)
+            setActiveCategory("All")
+            setGridSelectedIndex(0)
+            setIsCartMode(false)
+          }
           break
         case "F3":
-          // Switch to Deals section
-          e.preventDefault()
-          usePosStore.getState().setMenuContext('Deals')
-          setActiveCategory("All")
-          setGridSelectedIndex(0)
-          setIsCartMode(false)
+          if (mainCategories[2]) {
+            e.preventDefault()
+            usePosStore.getState().setMenuContext(mainCategories[2].name)
+            setActiveCategory("All")
+            setGridSelectedIndex(0)
+            setIsCartMode(false)
+          }
           break
         case "F4":
           //recent orders
@@ -1828,19 +1841,25 @@ export default function POS() {
                 Active Orders
               </button>
 
-              <div className="shrink-0 flex items-center gap-1 bg-card p-1 rounded-xl border border-border">
-                {([['Fast Food', 'F1'], ['Restaurant', 'F2'], ['Deals', 'F3']] as const).map(([context, fkey]) => (
-                  <button
-                    key={context}
-                    onClick={() => { setMenuContext(context as any); setActiveCategory("All"); setIsCartMode(false); }}
-                    className={`px-3 py-2 text-xs font-bold rounded-lg transition-colors duration-200 flex items-center gap-1.5 ${menuContext === context ? 'bg-orange-500 shadow-sm text-white dark:bg-primary/16 dark:text-[#F0A868]' : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                  >
-                    {context}
-                    <span className={`text-[9px] font-black px-1 py-0.5 rounded ${menuContext === context ? 'bg-white/20 text-white' : 'bg-secondary text-muted-foreground'
-                      }`}>{fkey}</span>
-                  </button>
-                ))}
+              <div className="shrink-0 flex items-center gap-1 bg-card p-1 rounded-xl border border-border overflow-x-auto max-w-full">
+                {mainCategories.map((cat, idx) => {
+                  const context = cat.name
+                  const fkey = idx < 3 ? `F${idx + 1}` : null
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => { setMenuContext(context); setActiveCategory("All"); setIsCartMode(false); }}
+                      className={`px-3 py-2 text-xs font-bold rounded-lg transition-colors duration-200 flex items-center gap-1.5 whitespace-nowrap ${menuContext === context ? 'bg-orange-500 shadow-sm text-white dark:bg-primary/16 dark:text-[#F0A868]' : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                    >
+                      {context}
+                      {fkey && (
+                        <span className={`text-[9px] font-black px-1 py-0.5 rounded ${menuContext === context ? 'bg-white/20 text-white' : 'bg-secondary text-muted-foreground'
+                          }`}>{fkey}</span>
+                      )}
+                    </button>
+                  )
+                })}
               </div>
             </div>
           </div>

@@ -29,6 +29,8 @@ export default function Products() {
 
   const [products, setProducts] = useState<any[]>([])
   const [categoriesList, setCategoriesList] = useState<any[]>([])
+  const [mainCategories, setMainCategories] = useState<any[]>([])
+  const [allActiveCategories, setAllActiveCategories] = useState<any[]>([])
   const [, setIsLoadingData] = useState(true)
 
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid")
@@ -39,7 +41,7 @@ export default function Products() {
   const [sortBy, setSortBy] = useState("Code")
   const [showFilters, setShowFilters] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const [mainTab, setMainTab] = useState<"Fast Food" | "Restaurant" | "Deals" | "Drinks">("Fast Food")
+  const [mainTab, setMainTab] = useState<string>("Fast Food")
 
   // Drawer States
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
@@ -78,13 +80,21 @@ export default function Products() {
       const allFetchedCats = flattenCategories(catRes.data || [])
       const activeCats = allFetchedCats.filter((c: any) => c.status === "Active" || c.lifecycle_state === "ACTIVE")
 
-      const getContext = (cat: any): string | null => {
-        if (cat.name === 'Fast Food' || cat.name === 'Restaurant' || cat.name === 'Deals') return cat.name;
-        if (cat.parent_id) {
-          const parent = activeCats.find((p: any) => p.id === cat.parent_id);
-          if (parent) return getContext(parent);
-        }
-        return null;
+      const rootCats = activeCats
+        .filter((c: any) => !c.parent_id)
+        .sort((a: any, b: any) => (Number(a.display_order) || 0) - (Number(b.display_order) || 0) || String(a.name).localeCompare(String(b.name)));
+      setMainCategories(rootCats);
+      setAllActiveCategories(activeCats);
+      if (rootCats.length > 0 && !rootCats.some((c: any) => c.name === mainTab)) {
+        setMainTab(rootCats[0].name);
+      }
+
+      const getContext = (cat: any, depth = 0): string | null => {
+        if (depth > 10) return null;
+        if (!cat.parent_id) return cat.name;
+        const parent = activeCats.find((p: any) => p.id === cat.parent_id);
+        if (parent) return getContext(parent, depth + 1);
+        return cat.name;
       }
 
       const catsWithContext = activeCats.map((c: any) => ({
@@ -437,12 +447,15 @@ export default function Products() {
       setIsDrawerOpen(true)
       return
     }
+    const defaultMain = mainCategories.find(c => c.name === mainTab) || mainCategories[0]
+    const defaultMainName = defaultMain?.name || "Fast Food"
+    const firstSub = defaultMain ? allActiveCategories.find(c => c.parent_id === defaultMain.id) : null
     setSelectedProduct({
       id: "",
       barcode: `8801${Math.floor(100000 + Math.random() * 900000)}`,
       name: "",
-      category: "Burgers",
-      kitchen: "Fast Food",
+      category: firstSub?.name || defaultMainName,
+      kitchen: defaultMainName,
       price: 0,
       costPrice: 0,
       status: "Active",
@@ -553,10 +566,8 @@ export default function Products() {
       const context = catObj?.menuContext || 'all'
 
       let matchMainTab = true
-      if (mainTab === "Fast Food") matchMainTab = (p.menuContext === "Fast Food" || p.kitchen === "Fast Food") && !isDeal && !isDrink
-      else if (mainTab === "Restaurant") matchMainTab = (p.menuContext === "Restaurant" || p.kitchen === "Restaurant") && !isDeal && !isDrink
-      else if (mainTab === "Deals") matchMainTab = isDeal
-      else if (mainTab === "Drinks") matchMainTab = isDrink
+      if (mainTab === "Deals") matchMainTab = isDeal || p.menuContext === "Deals" || p.kitchen === "Deals"
+      else matchMainTab = (p.menuContext === mainTab || p.kitchen === mainTab) && !isDeal
 
       const matchCat = selectedCategory === "All" || p.category === selectedCategory
       const matchKitchen = selectedKitchen === "All" || p.kitchen === selectedKitchen
@@ -707,16 +718,16 @@ export default function Products() {
 
 
                 <div>
-                  <label className="text-[10px] uppercase font-black text-muted-foreground">Kitchen Assign</label>
+                  <label className="text-[10px] uppercase font-black text-muted-foreground">Main Category</label>
                   <select
                     value={selectedKitchen}
                     onChange={(e) => setSelectedKitchen(e.target.value)}
                     className="w-full h-9 rounded-lg bg-secondary border border-border text-xs font-bold px-2 mt-1 focus:outline-none"
                   >
-                    <option value="All">All Kitchens</option>
-                    <option value="Fast Food">Fast Food Kitchen</option>
-                    <option value="Restaurant">Restaurant Kitchen</option>
-                    <option value="Drinks">Drinks Bar</option>
+                    <option value="All">All Main Categories</option>
+                    {mainCategories.map(mc => (
+                      <option key={mc.id} value={mc.name}>{mc.name}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -771,10 +782,10 @@ export default function Products() {
 
         {/* Main Categories Segmented Control */}
         <div className="flex gap-2 p-1.5 bg-secondary/80 border border-border rounded-2xl overflow-x-auto custom-scrollbar shadow-sm">
-          {["Fast Food", "Restaurant", "Deals", "Drinks"].map((tab) => (
+          {(mainCategories.length > 0 ? mainCategories.map(c => c.name) : ["Fast Food", "Restaurant", "Deals"]).map((tab) => (
             <button
               key={tab}
-              onClick={() => setMainTab(tab as any)}
+              onClick={() => setMainTab(tab)}
               className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all duration-300 ${mainTab === tab
                 ? 'bg-primary text-white shadow-md shadow-primary/20 scale-[1.02]'
                 : 'text-muted-foreground hover:bg-background hover:text-foreground'
@@ -1394,16 +1405,25 @@ export default function Products() {
                     {/* Core Properties */}
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
-                        <label className="text-xs uppercase font-black text-muted-foreground">Kitchen Assignment</label>
+                        <label className="text-xs uppercase font-black text-muted-foreground">Main Category</label>
                         <select
                           disabled={drawerMode === "view"}
                           value={selectedProduct.kitchen}
-                          onChange={e => setSelectedProduct({ ...selectedProduct, kitchen: e.target.value })}
+                          onChange={e => {
+                            const newMainName = e.target.value
+                            const newMainObj = mainCategories.find(c => c.name === newMainName)
+                            const subCats = newMainObj ? allActiveCategories.filter(c => c.parent_id === newMainObj.id) : []
+                            setSelectedProduct({
+                              ...selectedProduct,
+                              kitchen: newMainName,
+                              category: subCats[0]?.name || newMainName
+                            })
+                          }}
                           className="w-full h-10 px-3 rounded-xl bg-secondary/80 border border-border focus:border-orange-500 outline-none text-xs font-bold text-foreground disabled:opacity-60"
                         >
-                          <option value="Fast Food">Fast Food Kitchen</option>
-                          <option value="Restaurant">Restaurant Kitchen</option>
-                          <option value="Drinks">Drinks Bar</option>
+                          {mainCategories.map(mc => (
+                            <option key={mc.id} value={mc.name}>{mc.name}</option>
+                          ))}
                         </select>
                       </div>
 
@@ -1424,16 +1444,21 @@ export default function Products() {
                     {/* Category & Pricing */}
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
-                        <label className="text-xs uppercase font-black text-muted-foreground">Category</label>
+                        <label className="text-xs uppercase font-black text-muted-foreground">Subcategory</label>
                         <select
                           disabled={drawerMode === "view"}
                           value={selectedProduct.category}
                           onChange={e => setSelectedProduct({ ...selectedProduct, category: e.target.value })}
                           className="w-full h-10 px-3 rounded-xl bg-secondary/80 border border-border focus:border-orange-500 outline-none text-xs font-bold text-foreground disabled:opacity-60"
                         >
-                          {categoriesList.map(cat => (
-                            <option key={cat.id || cat.name} value={cat.name}>{cat.name}</option>
-                          ))}
+                          {(() => {
+                            const currentMain = mainCategories.find(c => c.name === selectedProduct.kitchen) || mainCategories[0]
+                            const subCats = currentMain ? allActiveCategories.filter(c => c.parent_id === currentMain.id) : []
+                            const options = subCats.length > 0 ? subCats : (currentMain ? [currentMain] : categoriesList)
+                            return options.map(cat => (
+                              <option key={cat.id || cat.name} value={cat.name}>{cat.name}</option>
+                            ))
+                          })()}
                         </select>
                       </div>
                       <div className="space-y-1">

@@ -106,16 +106,6 @@ export const reprintReceipt = async (req, res) => {
   }
 };
 
-export const openCashDrawer = async (req, res) => {
-  try {
-    const cashierUserId = req.body?.cashier_user_id || 'SYSTEM';
-    const result = await printService.openCashDrawer(cashierUserId);
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
-  }
-};
-
 export const cancelJob = (req, res) => {
   try {
     printQueueService.cancel(req.params.jobId);

@@ -71,8 +71,7 @@ export default function Dashboard() {
   // Interface states
   const [searchQuery, setSearchQuery] = useState("")
 
-  // Hardware/System Simulation states
-  const [drawerOpen, setDrawerOpen] = useState(false)
+  // Hardware/System Simulation states removed
 
   const enhancedTables = useMemo(() => {
     return backendTables.map(t => {
@@ -600,30 +599,6 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-
-      {/* Drawer Simulation Modal */}
-      <AnimatePresence>
-        {drawerOpen && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setDrawerOpen(false)} className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative w-full max-w-sm bg-card border border-border shadow-2xl rounded-3xl p-6 text-center">
-              <div className="w-16 h-16 bg-gradient-to-tr from-emerald-500 to-green-400 rounded-2xl flex items-center justify-center text-white mx-auto shadow-lg mb-4">
-                <CheckCircle className="w-8 h-8" />
-              </div>
-              <h2 className="text-xl font-black text-foreground">Cash Drawer Opened</h2>
-              <p className="text-xs text-muted-foreground font-semibold mt-2">
-                Manager override key applied. Cashier Ali is authorized to process transactions. Logged in audit history.
-              </p>
-              <button
-                onClick={() => setDrawerOpen(false)}
-                className="w-full mt-6 py-3 bg-secondary hover:bg-border rounded-xl font-bold text-xs uppercase transition-colors"
-              >
-                Close Indicator
-              </button>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
 
     </div>
   )

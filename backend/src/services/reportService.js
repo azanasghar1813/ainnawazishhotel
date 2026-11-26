@@ -41,8 +41,6 @@ const emptyBuckets = () => ({
   fastFoodSales: 0,
   dealsSales: 0,
   drinksSales: 0,
-  chipsSales: 0,
-  specialDrinksSales: 0,
   otherSales: 0
 });
 
@@ -52,8 +50,6 @@ const bucketToField = (bucket) => {
     case 'Fast Food': return 'fastFoodSales';
     case 'Deals': return 'dealsSales';
     case 'Drinks': return 'drinksSales';
-    case 'Fries': return 'chipsSales';
-    case 'Soda Bar': return 'specialDrinksSales';
     default: return 'otherSales';
   }
 };
@@ -138,6 +134,18 @@ export const reportService = {
       buckets[field] += Number(row.net) || 0;
     }
 
+    const orderTypeSplit = dbEngine.get(`
+      SELECT
+        COALESCE(SUM(CASE WHEN UPPER(REPLACE(COALESCE(o.order_type, ''), ' ', '_')) = 'DINE_IN' THEN o.grand_total ELSE 0 END), 0) as dineInSales,
+        COALESCE(SUM(CASE WHEN UPPER(REPLACE(COALESCE(o.order_type, ''), ' ', '_')) = 'DINE_IN' THEN 1 ELSE 0 END), 0) as dineInCount,
+        COALESCE(SUM(CASE WHEN UPPER(REPLACE(COALESCE(o.order_type, ''), ' ', '_')) = 'DELIVERY' THEN o.grand_total ELSE 0 END), 0) as deliverySales,
+        COALESCE(SUM(CASE WHEN UPPER(REPLACE(COALESCE(o.order_type, ''), ' ', '_')) = 'DELIVERY' THEN 1 ELSE 0 END), 0) as deliveryCount,
+        COALESCE(SUM(CASE WHEN UPPER(REPLACE(COALESCE(o.order_type, ''), ' ', '_')) IN ('TAKEAWAY', 'TAKE_AWAY') THEN o.grand_total ELSE 0 END), 0) as takeawaySales,
+        COALESCE(SUM(CASE WHEN UPPER(REPLACE(COALESCE(o.order_type, ''), ' ', '_')) IN ('TAKEAWAY', 'TAKE_AWAY') THEN 1 ELSE 0 END), 0) as takeawayCount
+      FROM orders o
+      WHERE ${where} AND ${SALE_PREDICATE}
+    `, ...params) || {};
+
     const netSales = Number(summary.netSales) || 0;
     const grossSales = Number(summary.grossSales) || 0;
     const ordersCount = Number(summary.ordersCount) || 0;
@@ -149,7 +157,7 @@ export const reportService = {
     const tips = Number(summary.tips) || 0;
     const totalCatSales =
       buckets.restaurantSales + buckets.fastFoodSales + buckets.dealsSales
-      + buckets.drinksSales + buckets.chipsSales + buckets.specialDrinksSales + buckets.otherSales;
+      + buckets.drinksSales + buckets.otherSales;
 
     return {
       grossSales,
@@ -168,6 +176,12 @@ export const reportService = {
       unpaidSales,
       paidCount: Number(paidCounts?.paidCount) || 0,
       unpaidCount: Number(paidCounts?.unpaidCount) || 0,
+      dineInSales: Number(orderTypeSplit.dineInSales) || 0,
+      dineInCount: Number(orderTypeSplit.dineInCount) || 0,
+      deliverySales: Number(orderTypeSplit.deliverySales) || 0,
+      deliveryCount: Number(orderTypeSplit.deliveryCount) || 0,
+      takeawaySales: Number(orderTypeSplit.takeawaySales) || 0,
+      takeawayCount: Number(orderTypeSplit.takeawayCount) || 0,
       averageOrderValue: ordersCount > 0 ? grossSales / ordersCount : 0,
       openBillsCount: Number(openRow?.openCount) || 0,
       openBillsTotal: Number(openRow?.openTotal) || 0,

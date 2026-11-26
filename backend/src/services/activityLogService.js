@@ -66,5 +66,24 @@ export const activityLogService = {
     
     const stmt = dbEngine.db.prepare(query);
     return stmt.all(...params);
+  },
+
+  /**
+   * Deletes activity logs older than `retentionDays` (default 90 days).
+   */
+  purgeOldLogs: (retentionDays = 90) => {
+    try {
+      const days = Math.max(1, Number(retentionDays) || 90);
+      const res = dbEngine.db.prepare(
+        `DELETE FROM activity_logs WHERE created_at < datetime('now', ?)`
+      ).run(`-${days} days`);
+      if (res.changes > 0) {
+        console.log(`[ActivityLog] Purged ${res.changes} log(s) older than ${days} days.`);
+      }
+      return res.changes;
+    } catch (error) {
+      console.error('[ActivityLog] Failed to purge old logs:', error.message);
+      return 0;
+    }
   }
 };

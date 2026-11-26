@@ -27,6 +27,12 @@ export interface ReportSummary {
   unpaidSales?: number;
   paidCount?: number;
   unpaidCount?: number;
+  dineInSales?: number;
+  dineInCount?: number;
+  deliverySales?: number;
+  deliveryCount?: number;
+  takeawaySales?: number;
+  takeawayCount?: number;
   restaurantSales?: number;
   fastFoodSales?: number;
   dealsSales?: number;

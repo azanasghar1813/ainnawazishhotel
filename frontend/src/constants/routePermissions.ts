@@ -9,7 +9,6 @@ export const ROUTE_PERMISSIONS: Record<string, string> = {
   '/categories': 'VIEW_CATEGORIES',
   '/customers': 'VIEW_CUSTOMERS',
   '/tables': 'VIEW_TABLES',
-  '/cashier': 'VIEW_CASHIERS',
   '/settings': 'VIEW_SETTINGS',
   '/backup': 'VIEW_BACKUP',
   '/sync': 'VIEW_SYNC',

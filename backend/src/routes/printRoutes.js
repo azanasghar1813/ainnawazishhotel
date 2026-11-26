@@ -9,7 +9,6 @@ import {
   printReceipt,
   printKitchenTickets,
   reprintReceipt,
-  openCashDrawer,
   cancelJob,
   clearQueue,
   getPrinterStatuses,
@@ -36,9 +35,6 @@ router.get('/reprint-log/:orderId',      getReprintLog);
 
 // ─── Reprint ──────────────────────────────────────────────────────────────────
 router.post('/reprint/:jobId',           reprintReceipt);
-
-// ─── Cash Drawer ──────────────────────────────────────────────────────────────
-router.post('/cash-drawer',              openCashDrawer);
 
 // ─── Printer Management ───────────────────────────────────────────────────────
 router.get('/printers',                  getPrinterStatuses);

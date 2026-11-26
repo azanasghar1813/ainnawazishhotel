@@ -65,7 +65,6 @@ interface PrinterState {
   printReceipt:    (orderId: string, cashierUserId: string, printPaid?: boolean) => Promise<{ job_id: string } | null>
   reprintJob:      (jobId: string, cashierUserId: string, reason?: string) => Promise<any>
   printKitchen:    (orderId: string, cashierUserId: string) => Promise<any>
-  openCashDrawer:  (cashierUserId: string) => Promise<any>
   testPrinter:     (printerId: string) => Promise<any>
   updatePrinterStatus: (printerId: string, status: Printer['status']) => void
   cancelJob:       (jobId: string) => Promise<void>
@@ -178,16 +177,6 @@ export const usePrinterStore = create<PrinterState>((set, get) => ({
       return result.data
     } catch (error: any) {
       console.error('[PrinterStore] printKitchen failed:', error.message)
-      return null
-    }
-  },
-
-  openCashDrawer: async (cashierUserId) => {
-    try {
-      const result = await apiClient.post('/print/cash-drawer', { cashier_user_id: cashierUserId })
-      return result.data
-    } catch (error: any) {
-      console.error('[PrinterStore] openCashDrawer failed:', error.message)
       return null
     }
   },

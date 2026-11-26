@@ -1,7 +1,6 @@
 import { cartCacheRepository } from '../repositories/cartCacheRepository.js';
 import { cartValidationService } from './cartValidationService.js';
 import { cartCalculationService } from './cartCalculationService.js';
-import { activityLogService } from './activityLogService.js';
 import crypto from 'crypto';
 
 /**
@@ -137,10 +136,6 @@ class CartService {
       this._carts.set(sessionId, cart);
       this._persist(cart);
 
-      activityLogService.logActivity(cashierUserId, 'CART_STARTED', 'CART', sessionId, {
-        branch_id: branchId,
-        order_type: options.order_type || 'DINE_IN'
-      });
     }
     return cart;
   }
@@ -183,11 +178,6 @@ class CartService {
         _cart_item_id: existing._cart_item_id // preserve the line item's unique ID
       };
 
-      activityLogService.logActivity(cashierUserId, 'CART_ITEM_MERGED', 'CART', sessionId, {
-        product_name_snapshot: calculated.product_name_snapshot,
-        old_qty: existing.quantity,
-        new_qty: newQty
-      });
     } else {
       // New unique line item
       cart.items.unshift({
@@ -195,10 +185,6 @@ class CartService {
         _cart_item_id: crypto.randomUUID() // Temporary UUID — never persisted to order tables
       });
 
-      activityLogService.logActivity(cashierUserId, 'CART_ITEM_ADDED', 'CART', sessionId, {
-        product_name_snapshot: calculated.product_name_snapshot,
-        quantity: calculated.quantity
-      });
     }
 
     this._refreshTotals(cart);
@@ -237,11 +223,6 @@ class CartService {
 
     cart.items[idx] = { ...updated, _cart_item_id: cartItemId };
 
-    activityLogService.logActivity(cashierUserId || 'SYSTEM', 'CART_ITEM_QTY_CHANGED', 'CART', sessionId, {
-      product_name: item.product_name,
-      old_qty: oldQty,
-      new_qty: newQuantity
-    });
 
     this._refreshTotals(cart);
     this._persist(cart);
@@ -283,10 +264,6 @@ class CartService {
       _cart_item_id: cartItemId
     };
 
-    activityLogService.logActivity(cashierUserId || 'SYSTEM', 'CART_ITEM_UPDATED', 'CART', sessionId, {
-      product_name: recalculated.product_name,
-      cart_item_id: cartItemId
-    });
 
     this._refreshTotals(cart);
     this._persist(cart);
@@ -310,10 +287,6 @@ class CartService {
 
     cart.items.unshift(duplicate);
 
-    activityLogService.logActivity(cashierUserId || 'SYSTEM', 'CART_ITEM_DUPLICATED', 'CART', sessionId, {
-      product_name: duplicate.product_name,
-      source_item_id: cartItemId
-    });
 
     this._refreshTotals(cart);
     this._persist(cart);
@@ -333,9 +306,6 @@ class CartService {
     const removed = cart.items[idx];
     cart.items.splice(idx, 1);
 
-    activityLogService.logActivity(cashierUserId || 'SYSTEM', 'CART_ITEM_REMOVED', 'CART', sessionId, {
-      product_name: removed.product_name
-    });
 
     this._refreshTotals(cart);
     this._persist(cart);
@@ -390,9 +360,6 @@ class CartService {
     cart.notes = null;
     cart.kitchen_notes = null;
 
-    activityLogService.logActivity(cashierUserId || 'SYSTEM', 'CART_CLEARED', 'CART', sessionId, {
-      items_cleared: prevCount
-    });
 
     this._refreshTotals(cart);
     this._persist(cart);
