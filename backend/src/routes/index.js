@@ -1,0 +1,51 @@
+import { Router } from 'express';
+import healthRoutes from './healthRoutes.js';
+import authRoutes from './authRoutes.js';
+import userRoutes from './userRoutes.js';
+import roleRoutes from './roleRoutes.js';
+import permissionRoutes from './permissionRoutes.js';
+import configRoutes from './configRoutes.js';
+import catalogRoutes from './catalogRoutes.js';
+import dashboardRoutes from './dashboardRoutes.js';
+import orderRoutes from './orderRoutes.js';
+import cartRoutes from './cartRoutes.js';
+import paymentRoutes from './paymentRoutes.js';
+import kitchenRoutes from './kitchenRoutes.js';
+import printRoutes from './printRoutes.js';
+import historyRoutes from './historyRoutes.js';
+import customerRoutes from './customerRoutes.js';
+import inventoryRoutes from './inventoryRoutes.js';
+import expenseRoutes from './expenseRoutes.js';
+import activityLogRoutes from './activityLogRoutes.js';
+import reportRoutes from './reportRoutes.js';
+import shiftRoutes from './shiftRoutes.js';
+import tableRoutes from './tableRoutes.js';
+import backupRoutes from './backupRoutes.js';
+
+const router = Router();
+
+// Mount all routes here
+router.use('/health', healthRoutes);
+router.use('/tables', tableRoutes);
+router.use('/auth', authRoutes);
+router.use('/users', userRoutes);
+router.use('/roles', roleRoutes);
+router.use('/permissions', permissionRoutes);
+router.use('/config', configRoutes);
+router.use('/catalog', catalogRoutes);
+router.use('/dashboard', dashboardRoutes);
+router.use('/orders', orderRoutes);
+router.use('/cart', cartRoutes);
+router.use('/payments', paymentRoutes);
+router.use('/kitchen', kitchenRoutes);
+router.use('/print', printRoutes);
+router.use('/history', historyRoutes);
+router.use('/customers', customerRoutes);
+router.use('/inventory', inventoryRoutes);
+router.use('/expenses', expenseRoutes);
+router.use('/activity-logs', activityLogRoutes);
+router.use('/reports', reportRoutes);
+router.use('/shifts', shiftRoutes);
+router.use('/backup', backupRoutes);
+
+export default router;
